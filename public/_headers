@@ -1,2 +1,2 @@
 /*
-  Content-Security-Policy: frame-ancestors 'self' https://*.ctump.edu.vn
+  Content-Security-Policy: frame-ancestors 'self' https://*.ctump.edu.vn https://ctump.edu.vn
