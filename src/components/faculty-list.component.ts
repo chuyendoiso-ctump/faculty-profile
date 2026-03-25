@@ -5,6 +5,15 @@ import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { DataService, FacultyProfile } from '../services/data.service';
 import { LanguageService } from '../services/language.service';
 
+function removeDiacritics(str: string): string {
+  if (!str) return '';
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D');
+}
+
 @Component({
   selector: 'app-faculty-list',
   standalone: true,
@@ -228,18 +237,22 @@ export class FacultyListComponent {
 
   filteredList = computed(() => {
     const list = this.dataService.facultyList();
-    const q = this.dataService.searchQuery().toLowerCase();
+    const q = removeDiacritics(this.dataService.searchQuery().toLowerCase());
     const d = this.dataService.deptFilter(); // This holds the Vietnamese Department Name
-    const i = this.dataService.interestFilter().toLowerCase();
+    const i = removeDiacritics(this.dataService.interestFilter().toLowerCase());
     const l = this.lang();
 
     return list.filter(item => {
-      const matchName = item.fullName.toLowerCase().includes(q);
+      const normalizedName = removeDiacritics(item.fullName.toLowerCase());
+      const matchName = normalizedName.includes(q);
+      
       // Filter logic matches against the stored department (which is VI)
       const matchDept = d ? item.department === d : true;
-      const matchInterest = l === 'vi' 
-        ? item.researchInterestVi.toLowerCase().includes(i) 
-        : item.researchInterestEn.toLowerCase().includes(i);
+      
+      const normalizedInterest = removeDiacritics(l === 'vi' 
+        ? item.researchInterestVi.toLowerCase() 
+        : item.researchInterestEn.toLowerCase());
+      const matchInterest = normalizedInterest.includes(i);
       
       return matchName && matchDept && matchInterest;
     });
